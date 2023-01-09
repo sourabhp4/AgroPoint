@@ -12,7 +12,7 @@ const getProducts = asynchandler(async (req, res) => {
         throw new Error(result.details[0].message)
     }
 
-    connection.query(`select category_id from category where category_id = ${req.body.category_id}`, async (err, results, field) => {
+    connection.query(`select * from category where category_id = ${req.body.category_id}`, async (err, results, field) => {
         if (err) {
             res.status(500).send({"message": "Server error"})
         } else {
@@ -31,6 +31,18 @@ const getProducts = asynchandler(async (req, res) => {
     })
 
 })
+
+// const getCategories = asynchandler(async (req, res) => {
+
+//     connection.query(`select category_id, category_name from category`, async (err, results, field) => {
+//         if (err) {
+//             res.status(500).send({"message": "Server error"})
+//         } else {
+//             return res.status(200).send(results)
+//         }
+//     })
+
+// })
 
 
 function validate(obj){

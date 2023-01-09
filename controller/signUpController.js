@@ -17,16 +17,25 @@ const createProfile = asynchandler(async (req, res) => {
     try{
         const pwd = encrypt(req.body.password)
 
-        connection.query(`insert into ${req.body.profile_type}(name, email, password) values ("${req.body.name}", "${req.body.email}", "${pwd}")`, (err, results, field) => {
+        connection.query(`select * from ${req.body.profile_type} where email = "${req.body.email}"`, async (err, results, field) => {
             if (err) {
-                console.log(err)
-                if (err.errno === 1062) {
-                    res.status(401).send(err.message)
+                res.status(500).send({"message": "Server error"})
+            } else {
+                if (results.length != 0) {
+                    return res.status(400).send({"message": "It looks like email already been registered with us"})
                 }
-                res.status(500).send({'message': 'Server error'})
-            } 
-            else 
-                res.status(200).send({ token: generateToken(req) })
+                connection.query(`insert into ${req.body.profile_type}(name, email, password) values ("${req.body.name}", "${req.body.email}", "${pwd}")`, (err, results, field) => {
+                    if (err) {
+                        console.log(err)
+                        if (err.errno === 1062) {
+                            return res.status(401).send(err.message)
+                        }
+                        res.status(500).send({'message': 'Server error'})
+                    } 
+                    else 
+                        res.status(200).send({ token: generateToken(req) })
+                })
+            }
         })
     }
 
