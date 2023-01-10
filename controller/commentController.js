@@ -50,16 +50,16 @@ const updateComment = asynchandler(async (req, res) => {
         throw new Error(result.details[0].message)
     }
     
-    if(req.body.cid == null)
-        throw new Error('comment id is required')
+    if(req.body.pid == null)
+        throw new Error('Product id is required')
 
     if(req.body.profile_type != 'user')
         return res.status(403).send({'message': 'No access'})
 
-    connection.query(`select user_id, cid, p_id from comments where cid = ${req.body.cid} and user_id in (select uid from user where email = ${req.body.email})`, 
+    connection.query(`select user_id, cid from comments where p_id = ${req.body.pid} and user_id in (select uid from user where email = "${req.body.email}") `, 
         async (err, results, field) => {
         if (err) {
-            res.status(500).send({"message": "Server error"})   
+            res.status(500).send({"message": "Server Error"})   
         } else {
             if (results.length == 0) {
                 return res.status(403).send({"message": "User has no privileges to update a comment"})
@@ -67,11 +67,11 @@ const updateComment = asynchandler(async (req, res) => {
             else if(results[0].cid == null)
                 return res.status(403).send({"message": "No comment found"})
             else{
-                req.body.pid = results[0].p_id
+                req.body.cid = results[0].cid
                 connection.query(`update comments set comment = "${req.body.comment}", rating = ${req.body.rating} where cid = ${req.body.cid}`,
                 async (err, results1, field) => {
                     if (err) {
-                        res.status(500).send({"message": err})
+                        res.status(500).send({"message": "Server Error"})
                     } else {
                         updateRating(req, res)
                     }
@@ -84,13 +84,13 @@ const updateComment = asynchandler(async (req, res) => {
 
 const deleteComment = asynchandler(async (req, res) => {
     
-    if(req.body.cid == null)
-        throw new Error('comment id is required')
+    if(req.body.pid == null)
+        throw new Error('Product id is required')
 
     if(req.body.profile_type != 'user')
         return res.status(403).send({'message': 'No access'})
 
-    connection.query(`select user_id, cid, p_id from comments where cid = ${req.body.cid} and user_id in (select uid from user where email = ${req.body.email})`, 
+    connection.query(`select user_id, cid from comments where p_id = ${req.body.pid} and user_id in (select uid from user where email = "${req.body.email}" )`, 
         async (err, results, field) => {
         if (err) {
             res.status(500).send({"message": "Server error"})
@@ -101,8 +101,8 @@ const deleteComment = asynchandler(async (req, res) => {
             else if(results[0].cid == null)
                 return res.status(403).send({"message": "No comment found"})
             else{
-                req.body.pid = results[0].p_id
-                connection.query(`delete from comments where cid = "${req.body.cid}"`,
+                req.body.cid = results[0].cid
+                connection.query(`delete from comments where cid = ${req.body.cid}`,
                 async (err, results, field) => {
                     if (err) {
                         res.status(500).send({"message": "Server error"})
@@ -117,7 +117,7 @@ const deleteComment = asynchandler(async (req, res) => {
 })
 
 function insertComment(req, res, uid){
-    connection.query(`insert into comments (comment, rating, user_id, p_id) values ("${req.body.comment}", ${req.body.rating}, ${uid}, ${req.body.pid}) )`,
+    connection.query(`insert into comments (comment, rating, user_id, p_id) values ("${req.body.comment}", ${req.body.rating}, ${uid}, ${req.body.pid} )`,
         async (err, results1, field) => {
             if (err) {
                 console.log(err)

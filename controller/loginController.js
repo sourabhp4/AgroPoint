@@ -23,7 +23,7 @@ const validateProfile = asynchandler(async (req, res) => {
             }
             
             const pwd = decrypt(results[0].password)
-            if (pwd == req.body.password) {
+            if (pwd === req.body.password) {
                 res.status(200).send({ token: generateToken(req) })
             } else {
                 res.status(401).send({"message": "Wrong password"})
